@@ -1,3 +1,7 @@
+mod solid;
+
+use crate::solid::*;
+
 pub type Vector = [u16; 4];
 pub type Matrix = [[u16; 4]; 4];
 pub type SolidHandle = usize;
@@ -18,28 +22,16 @@ pub struct Model {
 }
 
 impl Model {
+    pub fn add_solid(&mut self) -> &mut Solid {
+        let new_handle = self.solids.len();
+        let new_solid = Solid::new(new_handle);
+        self.solids.push(new_solid);
+        &mut self.solids[new_handle]
+    }
+    
     pub fn list_solid(&self, handle: SolidHandle) {
         let solid = &self.solids[handle];
         solid.list(self);
-    }
-}
-
-#[derive(Default)]
-pub struct Solid {
-    pub id: SolidHandle,
-    pub faces: Vec<FaceHandle>,
-    pub edges: Vec<EdgeHandle>,
-    pub vertices: Vec<VertexHandle>,
-    pub next: SolidHandle,
-    pub prev: SolidHandle,
-}
-
-impl Solid {
-    pub fn list(&self, model: &Model) {
-        for &f in self.faces.as_slice() {
-            let f = &model.faces[f];
-            f.list(model);
-        }
     }
 }
 
