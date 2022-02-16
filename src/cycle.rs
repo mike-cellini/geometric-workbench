@@ -1,16 +1,16 @@
 use super::*;
 
 #[derive(Default)]
-pub struct Loop {
-    pub id: LoopHandle,
+pub struct Cycle {
+    pub id: CycleHandle,
     pub halfedge: Option<HalfEdgeHandle>,
     pub face: FaceHandle,
-    pub next: LoopHandle,
-    pub prev: LoopHandle,
+    pub next: CycleHandle,
+    pub prev: CycleHandle,
 }
 
-impl Loop {
-    pub fn new(id: LoopHandle, face: FaceHandle) -> Self {
+impl Cycle {
+    pub fn new(id: CycleHandle, face: FaceHandle) -> Self {
         Self {
             id,
             face,
@@ -19,7 +19,7 @@ impl Loop {
     }
 
     pub fn list(&self, model: &Model) {
-        print!("loop:");
+        print!("cycle:");
 
         if let Some(he) = self.halfedge {
             let mut he = &model.half_edges[he];

@@ -19,7 +19,7 @@ pub struct HalfEdge {
     pub id: HalfEdgeHandle,
     pub edge: EdgeHandle,
     pub vertex: VertexHandle,
-    pub parent_loop: LoopHandle,
+    pub cycle: CycleHandle,
     pub next: Option<HalfEdgeHandle>,
     pub prev: Option<HalfEdgeHandle>,
 }
@@ -29,13 +29,13 @@ impl HalfEdge {
         id: HalfEdgeHandle,
         edge: EdgeHandle,
         vertex: VertexHandle,
-        parent_loop: LoopHandle,
+        cycle: CycleHandle,
     ) -> Self {
         Self {
             id,
             edge,
             vertex,
-            parent_loop,
+            cycle,
             ..Default::default()
         }
     }

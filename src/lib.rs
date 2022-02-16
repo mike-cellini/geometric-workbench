@@ -1,12 +1,12 @@
 mod solid;
 mod face;
-mod r#loop;
+mod cycle;
 mod half_edge;
 mod vertex;
 
 use crate::solid::*;
 use crate::face::*;
-use crate::r#loop::*;
+use crate::cycle::*;
 use crate::half_edge::*;
 use crate::vertex::*;
 
@@ -14,7 +14,7 @@ pub type Vector = [u16; 4];
 pub type Matrix = [[u16; 4]; 4];
 pub type SolidHandle = usize;
 pub type FaceHandle = usize;
-pub type LoopHandle = usize;
+pub type CycleHandle = usize;
 pub type EdgeHandle = usize;
 pub type HalfEdgeHandle = usize;
 pub type VertexHandle = usize;
@@ -23,7 +23,7 @@ pub type VertexHandle = usize;
 pub struct Model {
     pub solids: Vec<Solid>,
     pub faces: Vec<Face>,
-    pub loops: Vec<Loop>,
+    pub cycles: Vec<Cycle>,
     pub half_edges: Vec<HalfEdge>,
     pub edges: Vec<Edge>,
     pub vertices: Vec<Vertex>,
@@ -44,11 +44,11 @@ impl Model {
         &mut self.faces[new_handle]
     }
 
-    pub fn add_loop(&mut self, face: FaceHandle) -> &mut Loop {
-        let new_handle = self.loops.len();
-        let new_loop = Loop::new(new_handle, face);
-        self.loops.push(new_loop);
-        &mut self.loops[new_handle]
+    pub fn add_loop(&mut self, face: FaceHandle) -> &mut Cycle {
+        let new_handle = self.cycles.len();
+        let new_loop = Cycle::new(new_handle, face);
+        self.cycles.push(new_loop);
+        &mut self.cycles[new_handle]
     }
 
     pub fn add_vertex(&mut self, x: u16, y: u16, z: u16) -> &mut Vertex {
