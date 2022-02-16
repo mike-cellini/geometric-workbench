@@ -1,6 +1,14 @@
 mod solid;
+mod face;
+mod r#loop;
+mod half_edge;
+mod vertex;
 
 use crate::solid::*;
+use crate::face::*;
+use crate::r#loop::*;
+use crate::half_edge::*;
+use crate::vertex::*;
 
 pub type Vector = [u16; 4];
 pub type Matrix = [[u16; 4]; 4];
@@ -28,6 +36,27 @@ impl Model {
         self.solids.push(new_solid);
         &mut self.solids[new_handle]
     }
+
+    pub fn add_face(&mut self, solid: SolidHandle) -> &mut Face {
+        let new_handle = self.faces.len();
+        let new_face = Face::new(new_handle, solid);
+        self.faces.push(new_face);
+        &mut self.faces[new_handle]
+    }
+
+    pub fn add_loop(&mut self, face: FaceHandle) -> &mut Loop {
+        let new_handle = self.loops.len();
+        let new_loop = Loop::new(new_handle, face);
+        self.loops.push(new_loop);
+        &mut self.loops[new_handle]
+    }
+
+    pub fn add_vertex(&mut self, x: u16, y: u16, z: u16) -> &mut Vertex {
+        let new_handle = self.vertices.len();
+        let new_vertex = Vertex::new(new_handle, x, y, z);
+        self.vertices.push(new_vertex);
+        &mut self.vertices[new_handle]
+    }
     
     pub fn list_solid(&self, handle: SolidHandle) {
         let solid = &self.solids[handle];
@@ -35,130 +64,3 @@ impl Model {
     }
 }
 
-#[derive(Default)]
-pub struct Face {
-    pub id: FaceHandle,
-    pub solid: SolidHandle,
-    pub outer_loop: LoopHandle,
-    pub loops: Vec<LoopHandle>,
-    pub face_equation: Vector,
-    pub next: FaceHandle,
-    pub prev: FaceHandle,
-}
-
-impl Face {
-    pub fn list(&self, model: &Model) {
-        println!("{}", self.id);
-        for &l in self.loops.as_slice() {
-            let l = &model.loops[l];
-            l.list(model);
-        }
-    }
-}
-
-#[derive(Default)]
-pub struct Loop {
-    pub id: LoopHandle,
-    pub halfedge: Option<HalfEdgeHandle>,
-    pub face: FaceHandle,
-    pub next: LoopHandle,
-    pub prev: LoopHandle,
-}
-
-impl Loop {
-    pub fn list(&self, model: &Model) {
-        print!("loop:");
-
-        if let Some(he) = self.halfedge {
-            let mut he = &model.half_edges[he];
-            loop {
-                he.list(model);
-                if let Some(next) = he.next {
-                    he = &model.half_edges[next];
-                    if he.id == self.halfedge.unwrap() {
-                        break;
-                    }
-                }
-            }
-        }
-    }        
-}
-
-#[derive(Default)]
-pub struct Edge {
-    pub id: EdgeHandle,
-    pub right_halfedge: HalfEdgeHandle,
-    pub left_halfedge: HalfEdgeHandle,
-    pub next: EdgeHandle,
-    pub prev: EdgeHandle,
-}
-
-#[derive(Default)]
-pub struct HalfEdge {
-    pub id: HalfEdgeHandle,
-    pub edge: EdgeHandle,
-    pub vertex: VertexHandle,
-    pub parent_loop: LoopHandle,
-    pub next: Option<HalfEdgeHandle>,
-    pub prev: Option<HalfEdgeHandle>,
-}
-
-impl HalfEdge {
-    pub fn list(&self, model: &Model) {
-        let v = &model.vertices[self.vertex];
-        v.list();
-    }
-
-    pub fn mate(&self, model: &Model) -> HalfEdgeHandle {
-        let edge = &model.edges[self.edge];
-        if edge.left_halfedge == self.id {
-            edge.right_halfedge
-        } else {
-            edge.left_halfedge
-        }
-    }
-}
-
-#[derive(Default)]
-pub struct Vertex {
-    pub id: VertexHandle,
-    pub half_edge: Option<HalfEdgeHandle>,
-    pub coordinates: Vector,
-    pub next: VertexHandle,
-    pub prev: VertexHandle,
-}
-
-impl Vertex {
-    pub fn list(&self) {
-        print!(
-            " {}: ({} {} {})",
-            self.id, self.coordinates[0], self.coordinates[1], self.coordinates[2]
-        );
-    }
-
-    pub fn list_neighbors(&self, model: &Model) {
-       match self.half_edge {
-            Some(he) => {
-                let he = &model.half_edges[he]; 
-                loop {
-                    if let Some(next) = he.next {
-                        let next = &model.half_edges[next];
-                        print!("{} ", next.id);
-                    }
-                    match model.half_edges[he.mate(model)].next {
-                        Some(mate_next) => {
-                            if mate_next == self.half_edge.unwrap() {
-                                break;
-                            }
-                        },
-                        None => {
-                            println!("Invalid model");
-                            break;
-                        },
-                    }
-                }
-            },
-            None => println!("No adjacent vertices"),
-       } 
-    }
-}
